@@ -2,7 +2,6 @@ package uk.ac.bris.cs.scotlandyard.ui.ai;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nonnull;
 
@@ -25,10 +24,10 @@ public class MyAi implements Ai {
 	// Helper function to return the best move among the moves derived from the score
 	// Compares score value from a map and returns the corresponding key(Move)
 	private Move bestMove(Board board) {
-		ScoreMap sc = new ScoreMap(board);
-		List<ScoreMap.Score> sm =  sc.scoreMap;
-		ScoreMap.Score best = sm.get(0) ;
-		for(ScoreMap.Score s :sm) {
+		ScoreMapMrX sc = new ScoreMapMrX(board);
+		List<ScoreMapMrX.Score> sm =  sc.scoreMap;
+		ScoreMapMrX.Score best = sm.get(0) ;
+		for(ScoreMapMrX.Score s :sm) {
 			if (s.getScore() >= best.getScore()) {
 				best = s;
 			}
