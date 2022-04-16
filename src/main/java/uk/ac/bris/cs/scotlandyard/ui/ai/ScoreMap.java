@@ -10,29 +10,48 @@ import java.util.List;
 // The elements are marked as private, though they can be extracted with getters
 public final class ScoreMap {
 
-    List<Score> scoreMap = new ArrayList<>();
-    final Board board;
+    List<Score> scoreMap;
+    Board board;
 
-    public ScoreMap(Board board) {
+    public ScoreMap(final Board board) {
         this.board = board;
-        this.scoreMap = getScoreMaps(board);
+        this.scoreMap = getScoreMaps();
     }
 
-    private final class Score {
+    public final class Score {
 
-        private Move move;
-        private int score;
+        private final Move move;
+        private final int score;
 
-        private Score(final Move move, final int score) {
+        private Score(Move move, int score) {
             this.move = move;
             this.score = score;
+        }
+
+        // Getter to return the score
+        public int getScore() {
+            return score;
+        }
+
+        // Getter to return the move
+        public Move getMove() {
+            return move;
+        }
+
+        @Override
+        public String toString() {
+            return "[Move: " + getMove() + ", score: " + getScore() + " ]";
         }
     }
 
     // Getter to return detectives in the board
-    private List<Piece> getDetectives(Board board) {
-        List<Piece> detectives = board.getPlayers().asList();
-        detectives.removeIf(p -> p.isMrX());
+    private List<Piece> getDetectives() {
+        List<Piece> detectives = new ArrayList<>(board.getPlayers());
+        Piece mrX = null;
+        for(Piece p: detectives) {
+            if(p.webColour().equals("#000")) mrX = p;
+        }
+        detectives.remove(mrX);
         return detectives;
     }
 
@@ -69,16 +88,14 @@ public final class ScoreMap {
     // TODO When expanding, think of using these recursively (Predicting 'n' moves ahead)
     // TODO Didn't add whether detectives have required ticket to reach the destination
     // Helper function to return the nodes that detectives can potentially move when given the source
-    private List<Integer> detectivePotential(Board board) {
+    private List<Integer> detectivePotential() {
         GameSetup setup = board.getSetup();
         List<Integer> potentialNode = new ArrayList<>();
-        List<Piece> detectives = getDetectives(board);
+        List<Piece> detectives = getDetectives();
         for(Piece p :detectives) {
             int source = board.getDetectiveLocation(getDetectiveByPiece(p))
                     .orElseThrow(NullPointerException :: new);
-            for (int destination : setup.graph.adjacentNodes(source)) {
-                potentialNode.add(destination);
-            }
+            potentialNode.addAll(setup.graph.adjacentNodes(source));
         }
         return potentialNode;
     }
@@ -86,13 +103,14 @@ public final class ScoreMap {
     // Reference 'https://boardgamegeek.com/thread/102272/scotland-yard-basic-strategy' for basic strategy for mrX
     // Helper function to add score class to scoreMap
 
-    private List<Score> getScoreMaps(Board board) {
+    private List<Score> getScoreMaps() {
         ImmutableSet<Move> mv = board.getAvailableMoves();
+        List<Score> scoreList = new ArrayList<>();
         for(Move m : mv) {
-            scoreMap.add(score(m));
-            System.out.println("By move m:" + m + "Score: " + score(m));
+            scoreList.add(score(m));
+            System.out.println(score(m));
         }
-        return scoreMap;
+        return scoreList;
     }
 
     // TODO Basic points to be considered in the scoring function
@@ -104,7 +122,7 @@ public final class ScoreMap {
     // Main function to evaluate a move by assigning score
     private Score score(Move m) {
         int n = 0;
-        List<Integer> potential = detectivePotential(board);
+        List<Integer> potential = detectivePotential();
         for(int i :potential) {
             if(getDestination(m) == i) n -= 50;
         }
