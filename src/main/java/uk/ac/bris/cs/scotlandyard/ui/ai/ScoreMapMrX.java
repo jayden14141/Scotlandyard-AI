@@ -101,6 +101,16 @@ public final class ScoreMapMrX {
         }
         return potentialNode;
     }
+    // TODO Merge this function with detectivePotential() above
+    public void handleDijkstra(int destination) {
+        List<Piece> detectives = getDetectives();
+        for (Piece p : detectives) {
+            int source = board.getDetectiveLocation(getDetectiveByPiece(p))
+                    .orElseThrow(NullPointerException :: new);
+            Dijkstra dj = new Dijkstra(board, source, destination);
+            System.out.println("@"+ p +": Distance from (" + source + ")to (" + destination +") :" + dj.getDistance(destination));
+        }
+    }
 
     // Reference 'https://boardgamegeek.com/thread/102272/scotland-yard-basic-strategy' for basic strategy for mrX
     // Helper function to add score class to scoreMap
@@ -108,11 +118,13 @@ public final class ScoreMapMrX {
         ImmutableSet<Move> mv = board.getAvailableMoves();
         List<Score> scoreList = new ArrayList<>();
         for(Move m : mv) {
+            handleDijkstra(m.source());
             scoreList.add(score(m));
-            System.out.println(score(m));
+//            System.out.println(score(m));
         }
         return scoreList;
     }
+
 
     // TODO Basic points to be considered in the scoring function
     // ALL the information about the game should be accessed via 'board'
@@ -130,7 +142,6 @@ public final class ScoreMapMrX {
         for(int i :potential) {
             if(getDestination(m) == i) n -= 20;
         }
-
         return new Score(m, n);
     }
 
