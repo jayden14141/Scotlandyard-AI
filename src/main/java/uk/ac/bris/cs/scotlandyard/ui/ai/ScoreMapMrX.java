@@ -19,7 +19,7 @@ public final class ScoreMapMrX {
 
     // A POJO to map the certain move with its assigned score
     // The elements are marked as private, though they can be extracted with getters
-    public final class Score {
+    public static final class Score {
 
         private final Move move;
         private final int score;
@@ -101,10 +101,11 @@ public final class ScoreMapMrX {
         }
         return potentialNode;
     }
+
     // TODO Merge this function with detectivePotential() above
-    public void handleDijkstra(int destination) {
+    public void handleDijkstra(Move m, int destination) {
         List<Piece> detectives = getDetectives();
-        for (Piece p : detectives) {
+        for (Piece p :detectives) {
             int source = board.getDetectiveLocation(getDetectiveByPiece(p))
                     .orElseThrow(NullPointerException :: new);
             Dijkstra dj = new Dijkstra(board, source, destination);
@@ -118,9 +119,8 @@ public final class ScoreMapMrX {
         ImmutableSet<Move> mv = board.getAvailableMoves();
         List<Score> scoreList = new ArrayList<>();
         for(Move m : mv) {
-            handleDijkstra(m.source());
             scoreList.add(score(m));
-//            System.out.println(score(m));
+            handleDijkstra(m, getDestination(m));
         }
         return scoreList;
     }

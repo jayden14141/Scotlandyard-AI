@@ -24,11 +24,11 @@ public class Dijkstra {
         this.setup = board.getSetup();
 
         initialise(source);
-        pq = new PriorityQueue(setup.graph.nodes().size());
         pq.push(source, shortestP[source - 1]);
         while(pq.size() != 0) {
             PriorityQueue.Distance d = pq.pop();
             for (int n :setup.graph.adjacentNodes(d.getNode())) {
+                // TODO Currently found an error from update() function
                 update(n, d.getNode());
             }
         }
@@ -51,7 +51,7 @@ public class Dijkstra {
 
     // Update the shortestP and PriorityQueue
     // Variable current refers to current vertex
-    public void update(int node, int current) {
+    public void update(int node, int current) {;
         // Index for shortestP
         int index = node - 1;
         int currentIndex = current - 1;
@@ -59,6 +59,7 @@ public class Dijkstra {
         if (shortestP[index] > shortestP[currentIndex] + 1) {
             shortestP[index] = shortestP[currentIndex] + 1;
         }
+
         if(pq.contains(node)) pq.setDistance(node, shortestP[index]);
         else pq.push(node, shortestP[index]);
     }

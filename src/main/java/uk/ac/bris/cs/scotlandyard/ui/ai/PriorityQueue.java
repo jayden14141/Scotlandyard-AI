@@ -15,10 +15,11 @@ import java.util.Arrays;
 public class PriorityQueue {
 
     // New inner class Distance to map the node with distance
-    public class Distance {
+    public static class Distance {
         private final int node;
         private int distance;
 
+        
         Distance(int node, int distance) {
             this.node = node;
             this.distance = distance;
@@ -67,6 +68,7 @@ public class PriorityQueue {
         assert(size() != 0);
         Distance target = queue[0];
         for(int i = 0; i < this.size() - 1; i++) queue[i] = queue[i + 1];
+        queue[size() - 1] = null;
         tail--;
         return target;
     }
@@ -112,12 +114,12 @@ public class PriorityQueue {
     }
 
     // Updates the distance
-    // (Not going to rearrange it since the distance will be
-    // extracted from the priority queue)
     public void setDistance(int node, int value) {
         Distance target = null;
         for(Distance d : queue) {
-            if(d.getNode() == node) target = d;
+            if (d != null) {
+                if(d.getNode() == node) target = d;
+            }
         }
         assert target != null;
         target.setDistance(value);
@@ -128,13 +130,15 @@ public class PriorityQueue {
         return tail;
     }
 
-    public boolean contains(int node) {
-        if (size() != 0) {
-            for(Distance d :queue) {
-                if (d.getNode() == node) return true;
+
+    public boolean contains(int value) {
+        if (size() != 0 ) {
+            for (Distance di : queue) {
+                if (di != null) {
+                    if (di.getNode() == value) return true;
+                }
             }
         }
-        else return false;
         return false;
     }
 
