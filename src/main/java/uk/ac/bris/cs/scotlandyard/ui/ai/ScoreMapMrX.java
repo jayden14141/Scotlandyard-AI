@@ -102,14 +102,14 @@ public final class ScoreMapMrX {
         return potentialNode;
     }
 
-    // TODO Merge this function with detectivePotential() above
-    public void handleDijkstra(Move m, int destination) {
+
+    public void myDijkstra(int mrXPotential) {
         List<Piece> detectives = getDetectives();
         for (Piece p :detectives) {
             int source = board.getDetectiveLocation(getDetectiveByPiece(p))
                     .orElseThrow(NullPointerException :: new);
-            Dijkstra dj = new Dijkstra(board, source, destination);
-            System.out.println("@"+ p +": Distance from (" + source + ")to (" + destination +") :" + dj.getDistance(destination));
+            Dijkstra my = new Dijkstra(board, source);
+            System.out.println("@"+p+": from" + source + "to" + mrXPotential + "Takes " + my.printWeight(mrXPotential));
         }
     }
 
@@ -120,7 +120,8 @@ public final class ScoreMapMrX {
         List<Score> scoreList = new ArrayList<>();
         for(Move m : mv) {
             scoreList.add(score(m));
-            handleDijkstra(m, getDestination(m));
+//            handleDijkstra(m, getDestination(m));
+            myDijkstra(getDestination(m));
         }
         return scoreList;
     }
