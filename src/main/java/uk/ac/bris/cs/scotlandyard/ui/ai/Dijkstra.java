@@ -4,7 +4,9 @@ import uk.ac.bris.cs.scotlandyard.model.Board;
 import uk.ac.bris.cs.scotlandyard.model.GameSetup;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.PriorityQueue;
 
 public class Dijkstra {
@@ -50,7 +52,7 @@ public class Dijkstra {
     }
 
     // Initialises the basic dijkstra class
-    public void initialise() {
+    private void initialise() {
         edges = new int[MAX+1][MAX+1];
         shortestP = new Node[MAX+1];
         visited = new boolean[MAX+1];
@@ -75,7 +77,7 @@ public class Dijkstra {
     // Since the dijkstra is used to calculate the distance from the 'detectives' to mrX,
     // the edge which is only used by FERRY is excluded
     // All the incident edges have weight 1
-    public void makeEdges(Board board) {
+    private void makeEdges(Board board) {
         GameSetup setup = board.getSetup();
         for(int i = 1; i < MAX + 1; i++) {
             for(int j = 1; j < MAX + 1; j++) {
@@ -90,12 +92,23 @@ public class Dijkstra {
     }
 
     // Updates the status if the node is visited for the first time
-    public void beenToNewPlace(int node) {
+    private void beenToNewPlace(int node) {
         pq.offer(shortestP[node]);
         visited[node] = true;
     }
 
-    public void dijkstra() {
+    // Helper function to return an arraylist of adjacent node
+    // Cannot use graph.adjacentNode since this includes ferry as well
+    // which detectives cannot use
+    private List<Node> adjacentForDetective(int source) {
+        ArrayList<Node> adjacentNode = new ArrayList<>();
+        for (int i = 1; i < MAX + 1; i++) {
+            if(edges[source][i] == 1) adjacentNode.add(shortestP[i]);
+        }
+        return adjacentNode;
+    }
+
+    private void dijkstra() {
         for(int i = 1; i < MAX + 1; i++) {
             if((edges[source][i] == 1) || (edges[i][source] == 1)) {
                 shortestP[i].distance = edges[source][i];
@@ -104,20 +117,17 @@ public class Dijkstra {
         beenToNewPlace(source);
         while(!pq.isEmpty()) {
             Node n = pq.poll();
-            for(int adjacent :board.getSetup().graph.adjacentNodes(n.node)) {
-                update(adjacent);
-            }
-        }
-        if(!terminate()) {
-            for(int i = 1; i < MAX + 1; i++) {
-                if(!visited[i]) System.out.println("Didn't visit:  " + i);
+            for( Node node : adjacentForDetective(n.node)) {
+                update(node.node);
             }
         }
     }
 
-    public void update(int current) {
-        for(int adjacent :board.getSetup().graph.adjacentNodes(current)) {
-            if(shortestP[adjacent].distance > shortestP[current].distance + edges[current][adjacent]) {
+    private void update(int current) {
+        for( Node adj : adjacentForDetective(current)) {
+            int adjacent = adj.node;
+            if((shortestP[adjacent].distance > shortestP[current].distance + edges[current][adjacent]) &&
+                    (edges[current][adjacent] >= 0)) {
                 shortestP[adjacent].distance = shortestP[current].distance + edges[current][adjacent];
                 if (!visited[adjacent]) {
                     beenToNewPlace(adjacent);
@@ -128,14 +138,6 @@ public class Dijkstra {
                 }
             }
         }
-    }
-
-    // Terminates the algorithm if every node is visited
-    public boolean terminate() {
-        for (int i = 1; i < MAX + 1; i++) {
-            if(!visited[i]) return false;
-        }
-        return true;
     }
 
     public int printWeight(int destination) {
