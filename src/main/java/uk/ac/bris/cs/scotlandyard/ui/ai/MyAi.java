@@ -24,10 +24,9 @@ public class MyAi implements Ai {
 	// Helper function to return the best move among the moves derived from the score
 	// Compares score value from a map and returns the corresponding key(Move)
 	private Move bestMove(Board board) {
-		ScoreMapMrX sc = new ScoreMapMrX(board);
-		List<ScoreMapMrX.Score> sm =  sc.scoreMap;
-		ScoreMapMrX.Score best = sm.get(0) ;
-		for(ScoreMapMrX.Score s :sm) {
+		List<ScoreMap.Score> sm =  new ScoreMap(board).getScoreMap();
+		ScoreMap.Score best = sm.get(0) ;
+		for(ScoreMap.Score s :sm) {
 			if (s.getScore() >= best.getScore()) {
 				best = s;
 			}
