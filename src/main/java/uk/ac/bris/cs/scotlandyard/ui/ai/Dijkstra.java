@@ -1,13 +1,11 @@
 package uk.ac.bris.cs.scotlandyard.ui.ai;
 
+import com.google.common.collect.ImmutableSet;
 import uk.ac.bris.cs.scotlandyard.model.Board;
 import uk.ac.bris.cs.scotlandyard.model.GameSetup;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class Dijkstra {
 
@@ -60,9 +58,14 @@ public class Dijkstra {
 
         for(int i = 1; i < MAX+1; i++) {
             for(int j = 1; j < MAX+1; j++) {
-                if(i == j) edges[i][j] = 0;
-                // TODO An error here
-                else edges[i][j] = -1;
+                if(i == j) {
+                    edges[i][j] = 0;
+                    edges[j][i] = 0;
+                }
+                else {
+                    edges[i][j] = -1;
+                    edges[j][i] = -1;
+                }
             }
             shortestP[i] = new Node(i, 1000);
             visited[i] = false;
@@ -82,7 +85,8 @@ public class Dijkstra {
         for(int i = 1; i < MAX + 1; i++) {
             for(int j = 1; j < MAX + 1; j++) {
                 if(setup.graph.edgeValue(i,j).isPresent()) {
-                    if(!setup.graph.edgeValue(i,j).equals(ScotlandYard.Transport.FERRY)) {
+                    if(!setup.graph.edgeValue(i,j).equals(Optional.of(
+                            ImmutableSet.of(ScotlandYard.Transport.FERRY)))) {
                         edges[i][j] = 1;
                         edges[j][i] = 1;
                     }
@@ -91,11 +95,6 @@ public class Dijkstra {
         }
     }
 
-    // Updates the status if the node is visited for the first time
-    private void beenToNewPlace(int node) {
-        pq.offer(shortestP[node]);
-        visited[node] = true;
-    }
 
     // Helper function to return an arraylist of adjacent node
     // Cannot use graph.adjacentNode since this includes ferry as well
@@ -111,34 +110,38 @@ public class Dijkstra {
     private void dijkstra() {
         for(int i = 1; i < MAX + 1; i++) {
             if((edges[source][i] == 1) || (edges[i][source] == 1)) {
-                shortestP[i].distance = edges[source][i];
+                shortestP[i].distance = 1;
             }
         }
-        beenToNewPlace(source);
+        visited[source] = true;
+        pq.offer(shortestP[source]);
         while(!pq.isEmpty()) {
             Node n = pq.poll();
-            for( Node node : adjacentForDetective(n.node)) {
+            for(Node node : adjacentForDetective(n.node)) {
+                visited[node.node] = true;
                 update(node.node);
             }
         }
     }
 
+
     private void update(int current) {
         for( Node adj : adjacentForDetective(current)) {
             int adjacent = adj.node;
             if((shortestP[adjacent].distance > shortestP[current].distance + edges[current][adjacent]) &&
-                    (edges[current][adjacent] >= 0)) {
+                    (edges[current][adjacent] > 0)) {
                 shortestP[adjacent].distance = shortestP[current].distance + edges[current][adjacent];
-                if (!visited[adjacent]) {
-                    beenToNewPlace(adjacent);
+                if (!visited[adjacent] ) {
+                    pq.offer(shortestP[adjacent]);
                 }
                 else {
-                    Node n = shortestP[adjacent];
-                    pq.offer(n);
+                    pq.remove(shortestP[adjacent]);
+                    pq.offer(shortestP[adjacent]);
                 }
             }
         }
     }
+
 
     public int printWeight(int destination) {
         return shortestP[destination].distance;

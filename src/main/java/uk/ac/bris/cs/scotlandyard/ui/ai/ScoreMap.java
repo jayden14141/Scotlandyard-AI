@@ -5,11 +5,12 @@ import uk.ac.bris.cs.scotlandyard.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 // A class to store Scores, given the board(the gameState)
 public final class ScoreMap {
 
-    private List<Score> scoreMap;
+    private final List<Score> scoreMap;
     private final Board board;
 
     public ScoreMap(final Board board) {
@@ -39,14 +40,10 @@ public final class ScoreMap {
             return move;
         }
 
-        // Setter to update the score
-        public void setScore(int value) {
-            this.score = value;
-        }
 
         @Override
         public String toString() {
-            return "[Move: " + getMove() + ", score: " + getScore() + " ]";
+            return "[Move: " + this.move + ", score: " + this.score + " ]";
         }
     }
 
@@ -103,8 +100,8 @@ public final class ScoreMap {
         for (Piece p :detectives) {
             int source = board.getDetectiveLocation(getDetectiveByPiece(p))
                     .orElseThrow(NullPointerException :: new);
-            Dijkstra my = new Dijkstra(board, source);
-            detectivesDistance.add(my.printWeight(mrXPotential));
+            int distance = new Dijkstra(board, source).printWeight(mrXPotential);
+            detectivesDistance.add(distance);
         }
         return detectivesDistance;
     }
@@ -113,37 +110,33 @@ public final class ScoreMap {
     private void evaluateByDistance(Move m, Score s) {
         List <Integer> distance = myDijkstra(getDestination(m));
         int n = getDetectives().size();
-        int meanDistance = 1;
-
+        int meanDistance = 0;
         // Assigns basic score by mean distance of detectives
         for (int j : distance) {
             meanDistance += j / n;
         }
-        s.setScore(s.getScore() - (100 / meanDistance));
+        if (meanDistance < 1) s.score -= 50;
+        else if(meanDistance < 2) s.score -= 30;
+        else if (meanDistance < 3) s.score -= 10;
 
         // Updates score if detectives are nearby the location where mrX is trying to go
         for(int i : distance) {
-            if(i == 1) s.setScore(s.getScore() - 40);
-            else if (i == 2) s.setScore(s.getScore() - 10);
+            if(i == 1) s.score -= 60;
+            else if (i == 2) s.score -= 10;
         }
     }
 
-    // Helper function to find out whether the move is single move or not
-    private boolean isSingleMove(Move m) {
-        return m.accept(new Move.Visitor<Boolean>() {
-            @Override
-            public Boolean visit(Move.SingleMove move) {
-                return true;
-            }
-
-            @Override
-            public Boolean visit(Move.DoubleMove move) {
-                return false;
-            }
-        });
+    // Helper function that returns boolean whether mrX is about to reveal his location
+    private boolean aboutToRevealLocation() {
+        int nextRound = board.getMrXTravelLog().size() + 1;
+        for (int i : ScotlandYard.REVEAL_MOVES) {
+            if (i == nextRound) return true;
+        }
+        return false;
     }
 
-    private boolean RevealedLocation() {
+    // Helper function that returns boolean whether mrX has revealed his location in his last turn
+    private boolean revealedLocation() {
         int previousRound = board.getMrXTravelLog().size();
         for (int i : ScotlandYard.REVEAL_MOVES) {
             if (i == previousRound) return true;
@@ -151,81 +144,157 @@ public final class ScoreMap {
         return false;
     }
 
-    // Helper function to find out if mrX is on the cusp (Just revealed his move / Detectives are so close)
-    // Utilises it to make another action for mrX
-    private boolean isEmergency() {
-        return RevealedLocation();
+    // Helper function returning if detective can catch mrX by one move
+    public boolean detectiveIsClose() {
+        var moves = board.getAvailableMoves().asList();
+        List <Integer> distance = myDijkstra(moves.get(0).source());
+        for(int i: distance) {
+            if(i == 1) return true;
+        }
+        return false;
     }
 
-    // Helper function that uses functional visitor to handle with single move and double move
-    private int handleMoves(Move m) {
-        return m.accept(new Move.FunctionalVisitor<>(
-                singleMove -> returnScoreSm(singleMove), doubleMove -> returnScoreDm(doubleMove)));
+
+
+
+    // Helper function to map the evaluated score with tickets used for the move
+    private int evaluateTicket(ScotlandYard.Ticket[] prefer, ScotlandYard.Ticket t) {
+        int score;
+        int rank = 0;
+        for(int i = 0; i < 4; i++) {
+            if (prefer[i].equals(t)) rank = i + 1;
+        }
+        if (rank == 1) score = 10;
+        else if (rank == 2) score = 5;
+        else if (rank == 3) score = -5;
+        else if (rank == 4) score = -10;
+        else throw new IllegalArgumentException();
+        return score;
     }
+
 
     // Helper function that handles single move
     // Makes two different action whether mrX is on the cusp or not
     private int returnScoreSm(Move.SingleMove m) {
         ScotlandYard.Ticket t = m.ticket;
         ScotlandYard.Ticket[] preferred;
-        int rank = 0;
         int score = 0;
-        if(!isEmergency()) {
-            score += 10;
-            preferred = new ScotlandYard.Ticket[]{ScotlandYard.Ticket.TAXI, ScotlandYard.Ticket.BUS,
-                    ScotlandYard.Ticket.UNDERGROUND, ScotlandYard.Ticket.SECRET};
-        } else {
+        if(revealedLocation()) {
             score -= 10;
             preferred = new ScotlandYard.Ticket[]{ScotlandYard.Ticket.SECRET, ScotlandYard.Ticket.UNDERGROUND,
                     ScotlandYard.Ticket.BUS, ScotlandYard.Ticket.TAXI};
+        } else {
+            preferred = new ScotlandYard.Ticket[]{ScotlandYard.Ticket.TAXI, ScotlandYard.Ticket.BUS,
+                    ScotlandYard.Ticket.UNDERGROUND, ScotlandYard.Ticket.SECRET};
         }
-        for(int i = 0; i < 4; i++) {
-            if (preferred[i].equals(t)) rank = i + 1;
-        }
-
-        score = switch (rank) {
-            case 1 -> 10;
-            case 2 -> 5;
-            case 3 -> 3;
-            case 4 -> -1;
-            default -> throw new IllegalArgumentException();
-        };
+        score += evaluateTicket(preferred, t);
 
         return score;
     }
 
     // Helper function that handles single move
-    // Makes two different action whether mrX is on the cusp or not
-    // TODO Not done
+    // Makes two different actions whether mrX is on the cusp or not
     private int returnScoreDm(Move.DoubleMove m) {
-        int dif = 0;
-        if (!isEmergency()) dif -= 10;
-        else dif += 10;
-        return dif;
+        int score = 0;
+        ScotlandYard.Ticket[] preferred;
+        ScotlandYard.Ticket t1 = m.ticket1;
+        ScotlandYard.Ticket t2 = m.ticket2;
+        // Prevents using secret ticket twice in one move
+        if ((m.ticket1 == ScotlandYard.Ticket.SECRET) && (m.ticket2 == ScotlandYard.Ticket.SECRET)) score -= 20;
+        if (revealedLocation()) {
+            score += 30;
+            preferred = new ScotlandYard.Ticket[]{ScotlandYard.Ticket.SECRET, ScotlandYard.Ticket.UNDERGROUND,
+                    ScotlandYard.Ticket.BUS, ScotlandYard.Ticket.TAXI};
+        }
+        // Prevents overusing double tickets
+        else {
+            score -= 50;
+            preferred = new ScotlandYard.Ticket[]{ScotlandYard.Ticket.TAXI, ScotlandYard.Ticket.BUS,
+                    ScotlandYard.Ticket.UNDERGROUND, ScotlandYard.Ticket.SECRET};
+        }
+        score += evaluateTicket(preferred, t1);
+        score += evaluateTicket(preferred, t2);
+
+        return score;
     }
 
+    // Helper function that uses functional visitor to handle with single move and double move
     private void evaluateByTransport(Move m, Score s) {
-        int difference = handleMoves(m);
-        s.setScore(s.getScore() + difference);
+        s.score += m.accept(new Move.FunctionalVisitor<>(
+                singleMove -> returnScoreSm(singleMove), doubleMove -> returnScoreDm(doubleMove)));
     }
 
-    // TODO Basic points to be considered in the scoring function
-    // ALL the information about the game should be accessed via 'board'
-    // Score scales: -100 <= x <= 100 potentially ? (Can be mutated)
-    // 1. Places which are near detectives get a low score (O)
-    // 1-1. If mrX's next move is the place where detectives can reach by one move, score -40 is allocated (O)
-    // 2. Place where has various choices of transportation gets high score
-    // 3. Try varying scores on types of transportation
-    // TODO Evaluate current situation to act differently
+    // Helper function that returns how many types of transportation is run in the specific node
+    public int[] howManyTransport() {
+        var graph = board.getSetup().graph;
+        int n = graph.nodes().size();
+        int[] transport = new int[n + 1];
+        for (int i = 1; i < n + 1; i++) {
+            transport[i] = 0;
+            boolean taxi = false;
+            boolean bus = false;
+            boolean underground = false;
+            boolean ferry = false;
+
+            for (int j : graph.adjacentNodes(i)) {
+                if (graph.edgeValue(i,j).equals(Optional.of(ImmutableSet.of(
+                        ScotlandYard.Transport.TAXI)))) taxi = true;
+                else if (graph.edgeValue(i,j).equals(Optional.of(ImmutableSet.of(
+                        ScotlandYard.Transport.BUS)))) bus = true;
+                else if (graph.edgeValue(i,j).equals(Optional.of(ImmutableSet.of(
+                        ScotlandYard.Transport.UNDERGROUND)))) underground = true;
+                else if (graph.edgeValue(i,j).equals(Optional.of(ImmutableSet.of(
+                        ScotlandYard.Transport.FERRY)))) ferry = true;
+            }
+
+            if (taxi) transport[i]++;
+            if (bus) transport[i]++;
+            if (underground) transport[i]++;
+            if (ferry) transport[i]++;
+        }
+        return transport;
+    }
+
+
+    // Helper function to evaluate the node on the graph
+    // Node which has more variation of transport gets a high score
+    // If mrX is about to reveal his location, more score is assigned if the node is transferred
+    public void evaluateByNode(Move m, Score s) {
+        int[] transport = howManyTransport();
+        int destination = getDestination(m);
+        int quantity = transport[destination];
+        if (aboutToRevealLocation() || detectiveIsClose()) {
+            switch (quantity) {
+                case 1 -> s.score -= 2;
+                case 2 -> s.score += 20;
+                case 3 -> s.score += 30;
+                case 4 -> s.score += 50;
+                default -> throw new IllegalArgumentException("In" + m + quantity);
+            }
+        } else {
+            switch (quantity) {
+                case 1 -> s.score -= 2;
+                case 2 -> s.score += 3;
+                case 3 -> s.score += 5;
+                case 4 -> s.score += 10;
+                default -> throw new IllegalArgumentException("In" + m + quantity);
+            }
+        }
+    }
+
+
     // Main function to evaluate a move by assigning score
+    // 1. Places which are near detectives get a low score (evaluateByDistance)
+    // 2. Varying scores on types of transportation (evaluateByTransport)
+    // 3. Place where has various choices of transportation gets high score (evaluateByNode)
     private Score score(Move m) {
         Score s = new Score(m, 0);
         evaluateByDistance(m, s);
         evaluateByTransport(m, s);
+        evaluateByNode(m, s);
         return s;
     }
 
-    // Reference 'https://boardgamegeek.com/thread/102272/scotland-yard-basic-strategy' for basic strategy for mrX
     // Helper function to add score class to scoreMap
     private List<Score> createScoreMaps() {
         ImmutableSet<Move> mv = board.getAvailableMoves();
