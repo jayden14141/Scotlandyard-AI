@@ -99,17 +99,37 @@ public final class ScoreMap {
         for (Piece p :detectives) {
             int source = board.getDetectiveLocation(getDetectiveByPiece(p))
                     .orElseThrow(NullPointerException :: new);
-            int distance = new Dijkstra(board, source).printWeight(mrXPotential);
-            detectivesDistance.add(distance);
+            detectivesDistance.add(new Dijkstra(board, source).printWeight(mrXPotential));
         }
         return detectivesDistance;
     }
 
+    //Calculates how dangerous the location will be to mrX depending on an adjusted mean distance from all detectives
+    private List<Float> calculateDanger(List<Integer> distance){
+        List<Float> dangerList = new ArrayList<>();
+        int roundRemaining = board.getMrXTravelLog().size();
+        for (int intDistance : distance){
+            if (!(intDistance > roundRemaining)){
+                dangerList.add((float) (1-(intDistance/roundRemaining)));
+            }
+            //detectives that are further away than remaining rounds provide zero threat to MrX
+        }
+        return dangerList;
+    }
+
+    // Evaluates score by distance to/from detectives
     // TODO Didn't add whether detectives have required ticket to reach the destination
     private void evaluateByDistance(Move m, Score s) {
         List <Integer> distance = myDijkstra(getDestination(m));
-        int n = getDetectives().size();
-        int meanDistance = 0;
+        //int n = getDetectives().size();
+        List <Float> dangerList = calculateDanger(distance);
+        float meanDanger = 0;
+        for (float danger : dangerList){
+            meanDanger += danger;
+        }
+        meanDanger = meanDanger/4;
+        s.score -= 50*meanDanger;
+        /*int meanDistance = 0;
         // Assigns basic score by mean distance of detectives
         for (int j : distance) {
             meanDistance += j / n;
@@ -117,6 +137,8 @@ public final class ScoreMap {
         if (meanDistance < 1) s.score -= 50;
         else if(meanDistance < 2) s.score -= 30;
         else if (meanDistance < 3) s.score -= 10;
+
+         */
 
         // Updates score if detectives are nearby the location where mrX is trying to go
         for(int i : distance) {
