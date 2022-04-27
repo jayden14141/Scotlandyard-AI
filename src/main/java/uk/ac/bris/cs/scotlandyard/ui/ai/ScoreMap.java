@@ -118,7 +118,6 @@ public final class ScoreMap {
     }
 
     // Evaluates score by distance to/from detectives
-    // TODO Didn't add whether detectives have required ticket to reach the destination
     private void evaluateByDistance(Move m, Score s) {
         List <Integer> distance = myDijkstra(getDestination(m));
         //int n = getDetectives().size();

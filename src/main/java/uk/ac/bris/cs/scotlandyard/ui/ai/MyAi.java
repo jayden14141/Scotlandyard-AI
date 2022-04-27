@@ -31,7 +31,6 @@ public class MyAi implements Ai {
 				best = s;
 			}
 		}
-		//TODO make an algorithm to return the move which has the highest score
 		return best.getMove();
 	}
 
