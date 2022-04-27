@@ -99,7 +99,7 @@ public final class ScoreMap {
         for (Piece p :detectives) {
             int source = board.getDetectiveLocation(getDetectiveByPiece(p))
                     .orElseThrow(NullPointerException :: new);
-            detectivesDistance.add(new Dijkstra(board, source).printWeight(mrXPotential));
+            detectivesDistance.add(new Dijkstra(board, source, p).printWeight(mrXPotential));
         }
         return detectivesDistance;
     }

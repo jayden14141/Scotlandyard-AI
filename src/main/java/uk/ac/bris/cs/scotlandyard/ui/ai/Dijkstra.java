@@ -1,8 +1,10 @@
 package uk.ac.bris.cs.scotlandyard.ui.ai;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import uk.ac.bris.cs.scotlandyard.model.Board;
 import uk.ac.bris.cs.scotlandyard.model.GameSetup;
+import uk.ac.bris.cs.scotlandyard.model.Piece;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard;
 
 import java.util.*;
@@ -17,6 +19,8 @@ public class Dijkstra {
     private boolean[] visited;
     private Node [] shortestP;
     private PriorityQueue<Node> pq;
+    private Piece p;
+    private Map<ScotlandYard.Ticket, Integer> ticketMap;
 
     // Helper inner class to store information about the node and the distance from the source
     public static class Node implements Comparable<Node> {
@@ -41,12 +45,25 @@ public class Dijkstra {
         }
     }
 
-    public Dijkstra(Board board, int source) {
+    public Dijkstra(Board board, int source, Piece p) {
+
         this.board = board;
         this.MAX = board.getSetup().graph.nodes().size();
         this.source = source;
+        this.p = p;
+        this.ticketMap = new HashMap<>();
+        initTickets();
         initialise();
         dijkstra();
+    }
+
+    private void initTickets() {
+        Board.TicketBoard ticketBoard = board.getPlayerTickets(p).orElseThrow();
+        Map<ScotlandYard.Ticket, Integer> newTickets = new HashMap<>();
+        newTickets.put(ScotlandYard.Ticket.TAXI, ticketBoard.getCount(ScotlandYard.Ticket.TAXI));
+        newTickets.put(ScotlandYard.Ticket.BUS, ticketBoard.getCount(ScotlandYard.Ticket.BUS));
+        newTickets.put(ScotlandYard.Ticket.UNDERGROUND, ticketBoard.getCount(ScotlandYard.Ticket.UNDERGROUND));
+        this.ticketMap = newTickets;
     }
 
     // Initialises the basic dijkstra class
@@ -124,13 +141,36 @@ public class Dijkstra {
         }
     }
 
+    private boolean hasTicket(ScotlandYard.Transport t) {
+        ScotlandYard.Ticket ticketUsed;
+        if(t.toString().equals(ScotlandYard.Ticket.TAXI.toString())) ticketUsed = ScotlandYard.Ticket.TAXI;
+        else if(t.toString().equals(ScotlandYard.Ticket.BUS.toString())) ticketUsed = ScotlandYard.Ticket.BUS;
+        else ticketUsed = ScotlandYard.Ticket.UNDERGROUND;
+        return (this.ticketMap.get(ticketUsed) != null);
+    }
+
+
+    private void useTickets(ScotlandYard.Transport t) {
+        Map<ScotlandYard.Ticket, Integer> newTickets = new HashMap<>(this.ticketMap);
+        ScotlandYard.Ticket ticketUsed;
+        if(t.toString().equals(ScotlandYard.Ticket.TAXI.toString())) ticketUsed = ScotlandYard.Ticket.TAXI;
+        else if(t.toString().equals(ScotlandYard.Ticket.BUS.toString())) ticketUsed = ScotlandYard.Ticket.BUS;
+        else ticketUsed = ScotlandYard.Ticket.UNDERGROUND;
+        newTickets.computeIfPresent(ticketUsed, (ticket, n) -> n - 1);
+        this.ticketMap = newTickets;
+    }
 
     private void update(int current) {
         for( Node adj : adjacentForDetective(current)) {
             int adjacent = adj.node;
+            ImmutableSet<ScotlandYard.Transport> transport =
+                    board.getSetup().graph.edgeValue(adjacent, current).orElseThrow();
+            Iterator<ScotlandYard.Transport> it = transport.iterator();
+            ScotlandYard.Transport trans = it.next();
             if((shortestP[adjacent].distance > shortestP[current].distance + edges[current][adjacent]) &&
-                    (edges[current][adjacent] > 0)) {
+                    (edges[current][adjacent] > 0) && hasTicket(trans)) {
                 shortestP[adjacent].distance = shortestP[current].distance + edges[current][adjacent];
+                useTickets(trans);
                 if (!visited[adjacent] ) {
                     pq.offer(shortestP[adjacent]);
                 }
