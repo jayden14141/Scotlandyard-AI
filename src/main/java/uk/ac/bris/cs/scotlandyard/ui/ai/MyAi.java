@@ -10,7 +10,7 @@ import uk.ac.bris.cs.scotlandyard.model.*;
 
 public class MyAi implements Ai {
 
-	@Nonnull @Override public String name() { return "Need to be named!"; }
+	@Nonnull @Override public String name() { return "Jack the Ripper"; }
 
 	@Nonnull @Override public Move pickMove(
 			@Nonnull Board board,
