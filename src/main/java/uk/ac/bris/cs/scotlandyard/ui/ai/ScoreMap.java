@@ -128,7 +128,7 @@ public final class ScoreMap {
             meanDanger += danger;
         }
         meanDanger = meanDanger/4;
-        s.score -= 50*meanDanger;
+        s.score -= Math.round(50*meanDanger);
         /*int meanDistance = 0;
         // Assigns basic score by mean distance of detectives
         for (int j : distance) {
