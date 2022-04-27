@@ -81,7 +81,7 @@ public final class ScoreMap {
     // Helper function that returns Enum Detective by its piece
     private Piece.Detective getDetectiveByPiece(Piece piece) {
         String colour = piece.webColour();
-        Piece.Detective detective = switch (colour) {
+        return switch (colour) {
             case "#f00" -> Piece.Detective.RED;
             case "#0f0" -> Piece.Detective.GREEN;
             case "#00f" -> Piece.Detective.BLUE;
@@ -89,7 +89,6 @@ public final class ScoreMap {
             case "#ff0" -> Piece.Detective.YELLOW;
             default -> throw new IllegalArgumentException("No detectives matched");
         };
-        return detective;
     }
 
     // Helper function that returns an arrayList which contains
@@ -221,7 +220,7 @@ public final class ScoreMap {
     // Helper function that uses functional visitor to handle with single move and double move
     private void evaluateByTransport(Move m, Score s) {
         s.score += m.accept(new Move.FunctionalVisitor<>(
-                singleMove -> returnScoreSm(singleMove), doubleMove -> returnScoreDm(doubleMove)));
+                this::returnScoreSm, this::returnScoreDm));
     }
 
     // Helper function that returns how many types of transportation is run in the specific node
