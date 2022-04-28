@@ -12,10 +12,12 @@ public final class ScoreMap {
 
     private final List<Score> scoreMap;
     private final Board board;
+    private final Move bestMove;
 
     public ScoreMap(final Board board) {
         this.board = board;
         this.scoreMap = createScoreMaps();
+        this.bestMove = bestMove();
     }
 
     // A POJO to map the certain move with its assigned score
@@ -47,9 +49,9 @@ public final class ScoreMap {
         }
     }
 
-    // Getter that returns ScoreMap
-    public List<Score> getScoreMap() {
-        return this.scoreMap;
+    // Getter that returns the best move
+    public Move getBestMove() {
+        return bestMove;
     }
 
     // Helper function that returns detectives in the board
@@ -309,6 +311,18 @@ public final class ScoreMap {
             scoreList.add(score(m));
         }
         return scoreList;
+    }
+
+    // Helper function to return the best move among the moves derived from the score
+    // Compares score value from a map and returns the corresponding key(Move)
+    private Move bestMove() {
+        ScoreMap.Score best = scoreMap.get(0) ;
+        for(ScoreMap.Score s :scoreMap) {
+            if (s.getScore() >= best.getScore()) {
+                best = s;
+            }
+        }
+        return best.getMove();
     }
 
 }
