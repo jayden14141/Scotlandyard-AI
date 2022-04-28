@@ -28,7 +28,7 @@ public class TestScoreMap extends TestModel {
         List<Piece> actualDetective = actual.getDetectives();
         List<Piece> expectedAnswer = new ArrayList<>(Arrays.asList(BLUE, RED, WHITE));
 
-        test(actualDetective.equals(expectedAnswer));
+        test(expectedAnswer, actualDetective);
     }
 
     public void testBestMove() throws IOException {
@@ -38,6 +38,6 @@ public class TestScoreMap extends TestModel {
         ScoreMap actualSc = new ScoreMap(board);
         Move actual = actualSc.getBestMove();
         Move expected = new Move.SingleMove(MRX, MrX.location(), ScotlandYard.Ticket.TAXI, 144);
-        test(actual.equals(expected));
+        test(expected, actual);
     }
 }

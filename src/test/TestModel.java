@@ -18,6 +18,11 @@ public abstract class TestModel {
         if(!b) throw new AssertionError("Incorrect");
     }
 
+    public static void test(Object expected, Object actual) {
+        if (!expected.equals(actual)) throw new AssertionError(
+                "Expected:" + expected + "but actual:" + actual);
+    }
+
     public static ImmutableMap<Ticket, Integer> makeTicketsManual(
             int taxi, int bus, int underground, int db, int secret) {
         Map<Ticket, Integer> tickets = new HashMap<>();

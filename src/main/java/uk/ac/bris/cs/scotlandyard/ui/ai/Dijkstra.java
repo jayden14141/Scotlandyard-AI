@@ -1,6 +1,5 @@
 package uk.ac.bris.cs.scotlandyard.ui.ai;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import uk.ac.bris.cs.scotlandyard.model.Board;
 import uk.ac.bris.cs.scotlandyard.model.GameSetup;
@@ -15,11 +14,11 @@ public class Dijkstra {
     // Maximum nodes
     private final int MAX;
     private final int source;
+    private final Piece p;
     private int[][] edges;
     private boolean[] visited;
     private Node [] shortestP;
     private PriorityQueue<Node> pq;
-    private Piece p;
     private Map<ScotlandYard.Ticket, Integer> ticketMap;
 
     // Helper inner class to store information about the node and the distance from the source

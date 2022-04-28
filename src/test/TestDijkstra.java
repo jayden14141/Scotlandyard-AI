@@ -5,12 +5,10 @@ import uk.ac.bris.cs.scotlandyard.model.Player;
 import uk.ac.bris.cs.scotlandyard.model.ScotlandYard;
 import uk.ac.bris.cs.scotlandyard.ui.ai.Dijkstra;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static java.util.Objects.requireNonNull;
 import static uk.ac.bris.cs.scotlandyard.model.Piece.Detective.BLUE;
 import static uk.ac.bris.cs.scotlandyard.model.Piece.Detective.RED;
 import static uk.ac.bris.cs.scotlandyard.model.Piece.MrX.MRX;
@@ -40,7 +38,7 @@ public class TestDijkstra extends TestModel {
             if (actualEdges[194][i] == 1) actualNode.add(i);
         }
         ArrayList<Integer> expectedNode = new ArrayList<>(Arrays.asList(192,193,195));
-        test(actualNode.equals(expectedNode));
+        test(expectedNode, actualNode);
     }
 
     // Tests whether it prints the distance as zero if source == destination

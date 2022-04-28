@@ -1,6 +1,5 @@
 package uk.ac.bris.cs.scotlandyard.ui.ai;
 
-import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
