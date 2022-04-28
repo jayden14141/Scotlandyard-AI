@@ -109,10 +109,9 @@ public final class ScoreMap {
         List<Float> dangerList = new ArrayList<>();
         int roundRemaining = board.getMrXTravelLog().size();
         for (int intDistance : distance){
-            if (!(intDistance > roundRemaining)){
-                dangerList.add((float) (1-(intDistance/roundRemaining)));
+            if (!(intDistance > roundRemaining)) {
+                dangerList.add((float) (1 - (intDistance / roundRemaining)));
             }
-            //detectives that are further away than remaining rounds provide zero threat to MrX
         }
         return dangerList;
     }
@@ -120,7 +119,6 @@ public final class ScoreMap {
     // Evaluates score by distance to/from detectives
     private void evaluateByDistance(Move m, Score s) {
         List <Integer> distance = myDijkstra(getDestination(m));
-        //int n = getDetectives().size();
         List <Float> dangerList = calculateDanger(distance);
         float meanDanger = 0;
         for (float danger : dangerList){
@@ -128,21 +126,9 @@ public final class ScoreMap {
         }
         meanDanger = meanDanger/4;
         s.score -= Math.round(50*meanDanger);
-        /*int meanDistance = 0;
-        // Assigns basic score by mean distance of detectives
-        for (int j : distance) {
-            meanDistance += j / n;
-        }
-        if (meanDistance < 1) s.score -= 50;
-        else if(meanDistance < 2) s.score -= 30;
-        else if (meanDistance < 3) s.score -= 10;
-
-         */
-
         // Updates score if detectives are nearby the location where mrX is trying to go
         for(int i : distance) {
             if(i == 1) s.score -= 60;
-            else if (i == 2) s.score -= 10;
         }
     }
 
@@ -293,10 +279,10 @@ public final class ScoreMap {
             }
         } else {
             switch (quantity) {
-                case 1 -> s.score -= 2;
-                case 2 -> s.score += 3;
-                case 3 -> s.score += 5;
-                case 4 -> s.score += 10;
+                case 1 -> s.score -= 3;
+                case 2 -> s.score += 5;
+                case 3 -> s.score += 10;
+                case 4 -> s.score += 25;
                 default -> throw new IllegalArgumentException("In" + m + quantity);
             }
         }
