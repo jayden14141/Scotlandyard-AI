@@ -180,6 +180,11 @@ public final class ScoreMap {
         return score;
     }
 
+    //helper function to check if node has only 1 transport, prevents use of secret move when redundant
+    private boolean singleTransportNode(int source){
+        int[] typesOfTransport = howManyTransport();
+        return typesOfTransport[source] == 1;
+    }
 
     // Helper function that handles single move
     // Makes two different action whether mrX is on the cusp or not
@@ -187,7 +192,7 @@ public final class ScoreMap {
         ScotlandYard.Ticket t = m.ticket;
         ScotlandYard.Ticket[] preferred;
         int score = 0;
-        if(revealedLocation()) {
+        if(revealedLocation() && !singleTransportNode(m.source())) {
             score -= 10;
             preferred = new ScotlandYard.Ticket[]{ScotlandYard.Ticket.SECRET, ScotlandYard.Ticket.UNDERGROUND,
                     ScotlandYard.Ticket.BUS, ScotlandYard.Ticket.TAXI};
