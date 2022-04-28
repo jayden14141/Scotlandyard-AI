@@ -182,7 +182,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <mainClass>uk.ac.bris.cs.scotlandyard.Main</mainClass>
+                    <mainClass>uk.ac.bris.cs.scotlandyard.uk.ac.bris.cs.scotlandyard.ui.ai.TestMain</mainClass>
                 </configuration>
             </plugin>
         </plugins>

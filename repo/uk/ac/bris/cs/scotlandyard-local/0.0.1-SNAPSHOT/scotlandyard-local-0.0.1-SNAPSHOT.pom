@@ -88,7 +88,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>uk.ac.bris.cs.scotlandyard.Main</mainClass>
+                    <mainClass>uk.ac.bris.cs.scotlandyard.uk.ac.bris.cs.scotlandyard.ui.ai.TestMain</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -99,7 +99,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>uk.ac.bris.cs.scotlandyard.Main</mainClass>
+                            <mainClass>uk.ac.bris.cs.scotlandyard.uk.ac.bris.cs.scotlandyard.ui.ai.TestMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

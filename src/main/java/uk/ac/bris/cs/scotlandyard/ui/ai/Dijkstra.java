@@ -57,6 +57,10 @@ public class Dijkstra {
         dijkstra();
     }
 
+    public int[][] getEdges() {
+        return edges;
+    }
+
     private void initTickets() {
         Board.TicketBoard ticketBoard = board.getPlayerTickets(p).orElseThrow();
         Map<ScotlandYard.Ticket, Integer> newTickets = new HashMap<>();
@@ -91,7 +95,6 @@ public class Dijkstra {
         makeEdges(board);
 
     }
-
 
     // Reforms data from the graph
     // Since the dijkstra is used to calculate the distance from the 'detectives' to mrX,

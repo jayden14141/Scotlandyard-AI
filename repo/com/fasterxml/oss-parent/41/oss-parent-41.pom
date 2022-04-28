@@ -87,7 +87,7 @@
     <osgi.requiredExecutionEnvironment />
     <osgi.versionpolicy>${range;[===,=+);${@}}</osgi.versionpolicy>
     <osgi.includeResource>{maven-resources}</osgi.includeResource>
-    <!-- 27-Dec-2015, tatu: Allow use of "Main-Class" too, default to empty -->
+    <!-- 27-Dec-2015, tatu: Allow use of "uk.ac.bris.cs.scotlandyard.ui.ai.TestMain-Class" too, default to empty -->
     <osgi.mainClass />
 
     <!--
@@ -284,7 +284,7 @@
               <Specification-Version>${project.version}</Specification-Version>
               <Specification-Vendor>${project.organization.name}</Specification-Vendor>
 
-              <Main-Class>${osgi.mainClass}</Main-Class>
+              <uk.ac.bris.cs.scotlandyard.ui.ai.TestMain-Class>${osgi.mainClass}</uk.ac.bris.cs.scotlandyard.ui.ai.TestMain-Class>
             </instructions>
           </configuration>
         </plugin>
