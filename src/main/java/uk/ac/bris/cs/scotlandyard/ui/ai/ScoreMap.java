@@ -55,7 +55,7 @@ public final class ScoreMap {
     }
 
     // Helper function that returns detectives in the board
-    private List<Piece> getDetectives() {
+    public List<Piece> getDetectives() {
         List<Piece> detectives = new ArrayList<>(board.getPlayers());
         Piece mrX = null;
         for(Piece p: detectives) {
@@ -233,7 +233,7 @@ public final class ScoreMap {
     }
 
     // Helper function that returns how many types of transportation is run in the specific node
-    public int[] howManyTransport() {
+    private int[] howManyTransport() {
         var graph = board.getSetup().graph;
         int n = graph.nodes().size();
         int[] transport = new int[n + 1];
@@ -267,7 +267,7 @@ public final class ScoreMap {
     // Helper function to evaluate the node on the graph
     // Node which has more variation of transport gets a high score
     // If mrX is about to reveal his location, more score is assigned if the node is transferred
-    public void evaluateByNode(Move m, Score s) {
+    private void evaluateByNode(Move m, Score s) {
         int[] transport = howManyTransport();
         int destination = getDestination(m);
         int quantity = transport[destination];
@@ -324,5 +324,4 @@ public final class ScoreMap {
         }
         return best.getMove();
     }
-
 }

@@ -19,12 +19,6 @@ import static uk.ac.bris.cs.scotlandyard.model.ScotlandYard.Ticket.TAXI;
 public class TestDijkstra extends TestModel {
 
     TestDijkstra() throws IOException {
-//        var MrX = new Player(MRX, ScotlandYard.defaultMrXTickets(), 78);
-//        var Blue = new Player(BLUE, ScotlandYard.defaultDetectiveTickets(), 94);
-//        var Red = new Player(RED, makeTicketsManual(0,1,0,0,0), 103);
-//        Board board = createGameState().build(movesSetup(), MrX, Blue);
-//        Dijkstra actual = new Dijkstra(board,Blue.location(), BLUE);
-//        this.actual2 = new Dijkstra(board,Blue.location(), RED);
         testDijkstraReadsGraphCorrectly();
         testDestinationToSourcePrintsZero();
         testDijkstraForManyPlayers();
@@ -55,7 +49,7 @@ public class TestDijkstra extends TestModel {
         var Blue = new Player(BLUE, ScotlandYard.defaultDetectiveTickets(), 50);
         Board board = createGameState().build(movesSetup(), MrX, Blue);
         Dijkstra actual = new Dijkstra(board, Blue.location(), BLUE);
-        int actualDistance = actual.printWeight(50);
+        int actualDistance = actual.printWeight(Blue.location());
         int expectedDistance = 0;
         test(actualDistance == expectedDistance);
     }
@@ -68,11 +62,11 @@ public class TestDijkstra extends TestModel {
         Board board = createGameState().build(movesSetup(), MrX, Blue, Red);
         Dijkstra actual1 = new Dijkstra(board, Blue.location(), BLUE);
         Dijkstra actual2 = new Dijkstra(board, Red.location(), RED);
-        int actualDistance1 = actual1.printWeight(67);
+        int actualDistance1 = actual1.printWeight(MrX.location());
         // 26 -> 39 -> 51 -> 67
         int expectedDistance1 = 3;
         test(actualDistance1 == expectedDistance1);
-        int actualDistance2 = actual2.printWeight(67);
+        int actualDistance2 = actual2.printWeight(MrX.location());
         // 111 -> 67
         int expectedDistance2 = 1;
         test(actualDistance2 == expectedDistance2);
@@ -85,11 +79,13 @@ public class TestDijkstra extends TestModel {
         Dijkstra actual1 = new Dijkstra(board1, Red.location(), RED);
         int actualDistance1 = actual1.printWeight(67);
         int expectedDistance1 = 1;
+        test(actualDistance1 == expectedDistance1);
         Board board2 = createGameState().build(movesSetup(), MrX, Red).advance(
-                new Move.SingleMove(MRX, 67, TAXI, 68));
+                new Move.SingleMove(MRX, MrX.location(), TAXI, 68));
         Dijkstra actual2 = new Dijkstra(board1, Red.location(), RED);
-        int actualDistance2 = actual2.printWeight(67);
+        int actualDistance2 = actual2.printWeight(68);
         int expectedDistance2 = 2;
+        test(actualDistance2 == expectedDistance2);
     }
 
     public void testWithGetAvailableMoves() throws IOException {
@@ -98,11 +94,10 @@ public class TestDijkstra extends TestModel {
         var Blue = new Player(BLUE, ScotlandYard.defaultDetectiveTickets(), 145);
         Board board = createGameState().build(movesSetup(), MrX, Blue);
         Dijkstra actual = new Dijkstra(board, Blue.location(), BLUE);
-        int actualDistance = actual.printWeight(67);
         int expectedDistance = 1;
         // In any ways, the detective requires a single move to reach mrX's potential moves' destination
         for (Move m :board.getAvailableMoves()) {
-            test(actual.printWeight(m.accept(new Move.Visitor<Integer>() {
+            test(actual.printWeight(m.accept(new Move.Visitor<>() {
                 @Override
                 public Integer visit(Move.SingleMove move) {
                     return move.destination;
